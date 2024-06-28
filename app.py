@@ -1,34 +1,36 @@
 import streamlit as st
 import re
+import pandas as pd
 
-# Function to extract lines with the specified pattern
-def extract_lines_with_pattern(text, pattern):
-    lines = text.split('\n')
-    matched_lines = [line for line in lines if re.search(pattern, line)]
-    return matched_lines
+# Function to extract text inside specific HTML div class
+def extract_text_with_class(text, class_name):
+    pattern = f'<div class="{class_name}">(.*?)</div>'
+    matches = re.findall(pattern, text)
+    return matches
 
 # Streamlit app
 def main():
-    st.title("Code Line Extractor")
+    st.title("HTML Class Text Extractor")
 
     st.write("""
-    Upload your code file, and this app will extract lines containing the pattern:
+    Upload your code file, and this app will extract text inside the HTML div class:
     `<div class="KL4NAf">cfActivities.json</div>`
+    and display it in a table format.
     """)
 
-    uploaded_file = st.file_uploader("Choose a file", type=["txt", "py", "html", "css", "js"])
+    uploaded_file = st.file_uploader("Choose a file", type=["html", "txt"])
 
     if uploaded_file is not None:
         text = uploaded_file.read().decode("utf-8")
-        pattern = r'<div class="KL4NAf">cfActivities\.json<\/div>'
-        extracted_lines = extract_lines_with_pattern(text, pattern)
+        class_name = "KL4NAf"
+        extracted_texts = extract_text_with_class(text, class_name)
 
-        if extracted_lines:
-            st.write("Extracted Lines:")
-            for line in extracted_lines:
-                st.code(line, language="html")
+        if extracted_texts:
+            df = pd.DataFrame(extracted_texts, columns=["Extracted Text"])
+            st.write("Extracted Texts:")
+            st.table(df)
         else:
-            st.write("No matching lines found.")
+            st.write("No matching text found.")
 
 if __name__ == "__main__":
     main()
